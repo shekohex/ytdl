@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "ytdl-lib",
+    "ytdl"
+]
