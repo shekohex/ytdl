@@ -1,5 +1,5 @@
 [package]
-name = "ytdl"
+name = "ytdl-server"
 version = "0.1.0"
 authors = ["Shady Khalifa <shekohex@gmail.com>"]
 
@@ -16,3 +16,4 @@ log = "0.4.2"
 env_logger = "0.5.10"
 hyper = "0.12.4"
 futures = "0.1.21"
+url = "1.7.0"
