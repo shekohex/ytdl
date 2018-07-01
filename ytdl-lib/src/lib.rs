@@ -69,7 +69,6 @@ lazy_static! {
     static ref SLICE_REGEX_STR: String = format!("(?m:^|,)({}){}", JS_KEY_STR, JS_SLICE_STR);
     static ref SPLICE_REGEX_STR: String = format!("(?m:^|,)({}){}", JS_KEY_STR, JS_SPLICE_STR);
     static ref SWAP_REGEX_STR: String = format!("(?m:^|,)({}){}", JS_KEY_STR, JS_SWAP_STR);
-
     // we don't have to re compile the regax every request.
     static ref ACTION_REGEX: Regex = Regex::new(&ACTIONS_OBJ_REGEXP).unwrap();
     static ref FUNC_REGEX: Regex = Regex::new(&ACTIONS_FUNC_REGEXP).unwrap();
@@ -136,6 +135,7 @@ impl Video {
             None
         }
     }
+
     #[inline]
     pub fn initialize(&mut self) -> Result<()> {
         if self.initialized {
@@ -173,6 +173,7 @@ impl Video {
         info!("Video initialized successfully");
         Ok(())
     }
+
     #[inline]
     fn get_video_info(&mut self) -> Result<()> {
         let url: String = format!("{}?video_id={}", YOUTUBE_INFO_URL, self.id);
@@ -210,7 +211,7 @@ impl Video {
 
 // Extract signature deciphering tokens from html5player file.
 #[inline]
-fn get_tokens<'b>(html5_player_url: &'b str) -> Result<Vec<(String, usize)>> {
+fn get_tokens(html5_player_url: &str) -> Result<Vec<(String, usize)>> {
     let re = Regex::new(r"player[-_]([a-zA-Z0-9\-_]+)")?;
     let player_id = re
         .captures(html5_player_url)
@@ -271,7 +272,7 @@ fn decipher<'c>(tokens: &[(String, usize)], signature: &'c str) -> Result<String
  * After retrieving the function that does this, we can see what actions
  * it takes on a signature.
  */
- #[inline]
+#[inline]
 fn exteract_actions(html5_player_file: &str) -> Result<Vec<(String, usize)>> {
     let obj_result = actions_obj_regex(html5_player_file)?;
     debug!("obj_result => {:?}", obj_result);
@@ -324,6 +325,7 @@ fn exteract_actions(html5_player_file: &str) -> Result<Vec<(String, usize)>> {
     debug!("myreg => {}", myreg);
     Ok(tokens)
 }
+
 #[inline]
 fn actions_obj_regex<'t>(text: &'t str) -> Result<Captures<'t>> {
     let captures = ACTION_REGEX
@@ -331,6 +333,7 @@ fn actions_obj_regex<'t>(text: &'t str) -> Result<Captures<'t>> {
         .ok_or_else(|| err_msg("Error While Matching 'obj' in Html5player file"))?;
     Ok(captures)
 }
+
 #[inline]
 fn actions_func_regex<'t>(text: &'t str) -> Result<Captures<'t>> {
     let captures = FUNC_REGEX
@@ -338,6 +341,7 @@ fn actions_func_regex<'t>(text: &'t str) -> Result<Captures<'t>> {
         .ok_or_else(|| err_msg("Error While Matching 'func' in Html5player file"))?;
     Ok(captures)
 }
+
 #[inline]
 fn multi_regex<'t>(regex: &'static Regex, text: &'t str) -> Result<&'t str> {
     match regex.captures(text) {
