@@ -108,10 +108,12 @@ impl HumanTime {
 fn router(req: Request<Body>) -> BoxFuture {
     let response;
     let internal_server_error = |error: Error| {
-        let err = format!(r#"<h2 style="color: red;"> Error </h2>: {}"#, error.cause());
+        let json = serde_json::to_string_pretty(&json!({ "error": format!("{}", error.cause()) }))
+            .unwrap();
         Response::builder()
             .status(StatusCode::INTERNAL_SERVER_ERROR)
-            .body(Body::from(err.into_bytes()))
+            .header("Content-Type", "application/json")
+            .body(Body::from(json))
             .unwrap()
     };
     match (req.method(), req.uri().path()) {
