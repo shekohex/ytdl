@@ -212,6 +212,7 @@ fn make_gif<'b>(url: &str, start: &HumanTime, duration: &HumanTime) -> Result<Ve
         .args(&["-t", duration_str])
         .args(&["-i", url])
         .args(&["-f", "gif"])
+        .args(&["-preset", "superfast"])
         .arg("-hide_banner")
         .args(&["-vf", "scale=340:-1"])
         .arg("pipe:1")
