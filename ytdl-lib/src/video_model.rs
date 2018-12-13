@@ -1,3 +1,4 @@
+use serde_derive::{Serialize, Deserialize};
 #[serde(default)]
 #[derive(Serialize, Deserialize, Debug, PartialEq, Default)]
 pub struct Assets {

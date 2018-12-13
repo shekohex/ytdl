@@ -1,15 +1,4 @@
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate serde_json;
-extern crate env_logger;
-extern crate failure;
-extern crate futures;
-extern crate hyper;
-extern crate regex;
-extern crate url;
 use regex::Regex;
-extern crate ytdl_lib;
 use failure::{err_msg, Error};
 use futures::{future, Future};
 use hyper::service::service_fn;
@@ -21,6 +10,9 @@ use std::ops::Sub;
 use std::process::Command;
 use url::form_urlencoded;
 use ytdl_lib::Video;
+use lazy_static::lazy_static;
+use serde_json::json;
+
 type Result<T> = std::result::Result<T, Error>;
 type BoxFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 const TIME_REGEX_STR: &str = r"(?m)^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$";
@@ -108,7 +100,7 @@ impl HumanTime {
 fn router(req: Request<Body>) -> BoxFuture {
     let response;
     let internal_server_error = |error: Error| {
-        let json = serde_json::to_string_pretty(&json!({ "error": format!("{}", error.cause()) }))
+        let json = serde_json::to_string_pretty(&json!({ "error": format!("{}", error.as_fail()) }))
             .unwrap();
         Response::builder()
             .status(StatusCode::INTERNAL_SERVER_ERROR)

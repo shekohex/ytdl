@@ -1,18 +1,9 @@
-#[macro_use]
-extern crate serde_derive;
-#[macro_use]
-extern crate log;
-#[macro_use]
-extern crate failure;
-#[macro_use]
-extern crate lazy_static;
-extern crate regex;
-extern crate reqwest;
-extern crate serde;
-extern crate serde_json;
-extern crate url;
 pub mod video_model;
+use crate::video_model::VideoConfig;
+use failure::format_err;
 use failure::{err_msg, Error};
+use lazy_static::lazy_static;
+use log::{debug, error, info, warn};
 use regex::{Captures, Regex};
 use reqwest::Response;
 use std::collections::HashMap;
@@ -21,7 +12,7 @@ use std::io::Read;
 use std::iter::FromIterator;
 use std::sync::Mutex;
 use url::form_urlencoded::parse;
-use video_model::VideoConfig;
+
 type Result<T> = std::result::Result<T, Error>;
 type VideoInfo = HashMap<String, String>;
 type VideoSorces = Vec<VideoInfo>;
@@ -158,8 +149,8 @@ impl Video {
             .ok_or_else(|| err_msg("Config String Not found"))?;
         self.config = serde_json::from_str(config_str)?;
         let tokens = get_tokens(&self.config.assets.js)?;
-        for mut source in &mut self.sources {
-            let mut signature;
+        for source in &mut self.sources {
+            let signature;
             {
                 let s = source.entry("s".to_string()).or_insert_with(String::new);
                 if s == &"".to_string() {
@@ -209,7 +200,7 @@ impl Video {
     }
 }
 
-// Extract signature deciphering tokens from html5player file.
+/// Extract signature deciphering tokens from html5player file.
 #[inline]
 fn get_tokens(html5_player_url: &str) -> Result<Vec<(String, usize)>> {
     let re = Regex::new(r"player[-_]([a-zA-Z0-9\-_]+)")?;
@@ -238,7 +229,7 @@ fn get_tokens(html5_player_url: &str) -> Result<Vec<(String, usize)>> {
     Ok(tokens)
 }
 
-// Decipher a signature based on action tokens.
+/// Decipher a signature based on action tokens.
 #[inline]
 fn decipher<'c>(tokens: &[(String, usize)], signature: &'c str) -> Result<String> {
     let mut sig: Vec<char> = signature.chars().collect();
@@ -258,20 +249,20 @@ fn decipher<'c>(tokens: &[(String, usize)], signature: &'c str) -> Result<String
     Ok(seg)
 }
 
-/**
- * Extracts the actions that should be taken to decipher a signature.
- *
- * This searches for a function that performs string manipulations on
- * the signature. We already know what the 3 possible changes to a signature
- * are in order to decipher it. There is
- *
- * - Reversing the string.
- * - Removing a number of characters from the beginning.
- * - Swapping the first character with another position.
- *
- * After retrieving the function that does this, we can see what actions
- * it takes on a signature.
- */
+///
+/// Extracts the actions that should be taken to decipher a signature.
+///
+/// This searches for a function that performs string manipulations on
+/// the signature. We already know what the 3 possible changes to a signature
+/// are in order to decipher it. There is
+///
+/// - Reversing the string.
+/// - Removing a number of characters from the beginning.
+/// - Swapping the first character with another position.
+///
+/// After retrieving the function that does this, we can see what actions
+/// it takes on a signature.
+///
 #[inline]
 fn exteract_actions(html5_player_file: &str) -> Result<Vec<(String, usize)>> {
     let obj_result = actions_obj_regex(html5_player_file)?;
